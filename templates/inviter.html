@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+	</head>
+
+	<style>
+
+        html, body{
+            margin: 0;
+            height: 100%;
+        }
+
+        .pink {
+            background-color: pink;
+        }
+
+        .aqua {
+            background-color: aqua;
+        }
+
+        .aqua-expand {
+            background-color: aqua;
+            padding: 5px !important;
+            margin: 0px !important;
+        }
+
+        .pink-expand {
+            background-color: pink;
+            padding: 5px !important;
+            margin: 0px !important;
+        }
+
+        .calendar-container{
+            width: 500px;
+            height: 200px;
+        }
+
+        .time-stack{
+            width: 500px;
+            height: 200px;
+            visibility: hidden;
+        }
+
+        .time-container{
+            position: absolute;
+        }
+
+        .time-container div{
+            background-color: yellowgreen;
+        }
+
+        .row{
+            display: flex;
+        }
+
+        .row div{
+            min-width: 17px;
+            height: 17px;
+            border: 1px solid black;
+            margin: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+	</style>
+
+
+	<body>
+		<h1>{{ month }} {{ year }}</h1>
+        <table>
+            <tr>
+                <td>
+                    <div class="calendar-container">
+                        <div class="row">
+                            <div id="row1-col1" class="pink"> {{ days.0 }} </div>
+                            <div id="row1-col2" class="pink"> {{ days.1 }} </div>
+                            <div id="row1-col3" class="pink"> {{ days.2 }} </div>
+                            <div id="row1-col4" class="pink"> {{ days.3 }} </div>
+                            <div id="row1-col5" class="pink"> {{ days.4 }} </div>
+                            <div id="row1-col6" class="pink"> {{ days.5 }} </div>
+                            <div id="row1-col7" class="pink"> {{ days.6 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row2-col1" class="pink"> {{ days.7 }} </div>
+                            <div id="row2-col2" class="pink"> {{ days.8 }} </div>
+                            <div id="row2-col3" class="pink"> {{ days.9 }} </div>
+                            <div id="row2-col4" class="pink"> {{ days.10 }} </div>
+                            <div id="row2-col5" class="pink"> {{ days.11 }} </div>
+                            <div id="row2-col6" class="pink"> {{ days.12 }} </div>
+                            <div id="row2-col7" class="pink"> {{ days.13 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row3-col1" class="pink"> {{ days.14 }} </div>
+                            <div id="row3-col2" class="pink"> {{ days.15 }} </div>
+                            <div id="row3-col3" class="pink"> {{ days.16 }} </div>
+                            <div id="row3-col4" class="pink"> {{ days.17 }} </div>
+                            <div id="row3-col5" class="pink"> {{ days.18 }} </div>
+                            <div id="row3-col6" class="pink"> {{ days.19 }} </div>
+                            <div id="row3-col7" class="pink"> {{ days.20 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row4-col1" class="pink"> {{ days.21 }} </div>
+                            <div id="row4-col2" class="pink"> {{ days.22 }} </div>
+                            <div id="row4-col3" class="pink"> {{ days.23 }} </div>
+                            <div id="row4-col4" class="pink"> {{ days.24 }} </div>
+                            <div id="row4-col5" class="pink"> {{ days.25 }} </div>
+                            <div id="row4-col6" class="pink"> {{ days.26 }} </div>
+                            <div id="row4-col7" class="pink"> {{ days.27 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row5-col1" class="pink"> {{ days.28 }} </div>
+                            <div id="row5-col2" class="pink"> {{ days.29 }} </div>
+                            <div id="row5-col3" class="pink"> {{ days.30 }} </div>
+                            <div id="row5-col4" class="pink"> {{ days.31 }} </div>
+                            <div id="row5-col5" class="pink"> {{ days.32 }} </div>
+                            <div id="row5-col6" class="pink"> {{ days.33 }} </div>
+                            <div id="row5-col7" class="pink"> {{ days.34 }} </div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class='time-stack'>
+                        
+                    </div>
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        {{ form.schedulecount }}
+
+                        {{ form.errors }}
+                        {% if success %}<div>Schedules saved successfully</div>{% endif %}
+                        {{ form.meeting_details.label }}
+                        {{ form.meeting_details }}
+                        <input type="button" value="Lock Schedule" onclick="customSubmit()">
+                    </form>
+                    <p>Invite link: <a href="http://{{ share_link }}" target="_blank">{{ share_link }}</a></p>
+                </td>
+            </tr>
+        </table>
+	    <script>
+            var today = new Date();
+            today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 8, 0, 0, 0);
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            var year = "{{ year|escapejs }}";
+            var inviterName = "{{ inviter_name|escapejs }}";
+
+            var availableDates = "{{ available_dates|escapejs }}".split(",");
+            var existingSchedules = "{{ existing_schedules|escapejs }}".split(",");
+
+            console.log(existingSchedules);
+
+            if (existingSchedules[0] === "") existingSchedules.pop();
+
+            // convert strings to date objects
+            availableDates = availableDates.map(function(date){
+                return new Date(date);
+            });
+
+            existingSchedules = existingSchedules.map(function(datetime){
+                return new Date(datetime);
+            });
+
+            let availableTimes = "{{ available_times|escapejs }}".split(",")
+
+            let diff, col, row, calendarElement;
+            let timeStack = document.querySelector(".time-stack");
+
+            let index = 0;
+            let dates =[];
+            for (let day of availableDates){
+                diff = (day.valueOf() - today.valueOf()) / (24 * 3600 * 1000);
+                row = Math.floor(diff / 7) + 1;
+                col = diff % 7 + 1; 
+                
+                dates.push(day.toString().slice(4,15));
+
+                calendarElement = document.querySelector("#row" + row  + "-col" + col);
+                calendarElement.classList.replace("pink", "aqua");
+                
+                let timeContainer = document.createElement("div");
+                timeContainer.id = "time-container" + index;
+                timeContainer.className = "time-container";
+                timeContainer.innerHTML = day;
+
+                for (let i = 0; i < availableTimes.length - 1; i++){
+                    let timeRow = document.createElement("div");
+                    let nameContainer = document.createElement("span");
+                    let timeButton = document.createElement("input");
+                    timeButton.value = availableTimes[i] + " - " + availableTimes[i + 1];
+                    timeButton.type = "button";
+
+                    timeRow.id = `row${i}-container${index}`;
+
+                    timeRow.appendChild(timeButton);
+                    timeRow.appendChild(nameContainer);
+                
+                    timeButton.addEventListener("click", function(){
+                        if (timeButton.className == "available"){
+                            nameContainer.innerText = "";
+                            timeButton.className = "";
+                        }
+                        else{
+                            nameContainer.innerText = inviterName;
+                            timeButton.className = "available";                    
+                        }
+                    })
+                    
+                    timeContainer.appendChild(timeRow);
+                }
+                timeStack.appendChild(timeContainer)
+
+                calendarElement.addEventListener("click", function(){
+                    document.querySelectorAll(".time-container").forEach(
+						function(element){
+                            element.style.visibility = "hidden";
+						}
+					);
+
+                    timeContainer.style.visibility = "visible";
+                })
+
+                index++;
+            }
+            
+            let dateIndex, timeIndex, timeRow, timeButton, nameContainer
+            for(let index = 0; index < existingSchedules.length; index++){
+                existingDate = existingSchedules[index].toString().slice(4, 15);
+                existingTime = existingSchedules[index].toString().slice(16, 21);
+
+                console.log(existingDate);
+                console.log(existingTime);
+
+                dateIndex = dates.indexOf(existingDate);
+                timeIndex = availableTimes.indexOf(existingTime)
+
+
+                timeRow = document.querySelector(`#row${timeIndex}-container${dateIndex}`);
+                
+                console.log(timeRow)
+
+                timeButton = timeRow.childNodes[0];
+                nameContainer = timeRow.childNodes[1];
+
+                timeButton.className = "available";
+                nameContainer.innerText = inviterName;
+            }
+
+			function customSubmit(){
+				var form = document.querySelector("form");
+
+                let schedule, time, hours, minutes;
+                let i = 0;
+                for(let index = 0; index < availableDates.length;index++){
+                    availableElements = document.querySelectorAll(`#time-container${index} .available`);
+                    for (let element of availableElements){
+                        newInput = document.createElement("input");
+					    newInput.setAttribute("type", "hidden");
+					    newInput.setAttribute("name", "schedule_" + i);
+
+                        time = element.value.slice(0,5)
+
+                        day = availableDates[index].getDate();
+
+                        month = months[availableDates[index].getMonth()];
+
+                        schedule = `${month} ${day} ${year} ${time}:00`
+                        i++;
+
+                        console.log(schedule)
+                        
+                        newInput.setAttribute("value", schedule);
+
+                        form.appendChild(newInput);
+                    }
+                }
+
+                document.querySelector("#id_schedulecount").setAttribute("value", i);
+				
+				form.submit();
+			}
+		</script>
+	</body>
+</html>

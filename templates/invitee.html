@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+	<head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <title></title>
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" href="">
+	</head>
+
+	<style>
+
+        html, body{
+            margin: 0;
+            height: 100%;
+        }
+
+        .pink {
+            background-color: pink;
+        }
+
+        .aqua {
+            background-color: aqua;
+        }
+
+        .aqua-expand {
+            background-color: aqua;
+            padding: 5px !important;
+            margin: 0px !important;
+        }
+
+        .pink-expand {
+            background-color: pink;
+            padding: 5px !important;
+            margin: 0px !important;
+        }
+
+        .calendar-container{
+            width: 500px;
+            height: 200px;
+        }
+
+        .time-stack{
+            width: 500px;
+            height: 200px;
+            visibility: hidden;
+        }
+
+        .time-container{
+            position: absolute;
+        }
+
+        .time-container div{
+            background-color: yellowgreen;
+        }
+
+        .row{
+            display: flex;
+        }
+
+        .row div{
+            min-width: 17px;
+            height: 17px;
+            border: 1px solid black;
+            margin: 5px;
+            cursor: pointer;
+            user-select: none;
+        }
+	</style>
+
+
+	<body>
+		<h1>{{ month }} {{ year }}</h1>
+        <table>
+            <tr>
+                <td>
+                    <div class="calendar-container">
+                        <div class="row">
+                            <div id="row1-col1" class="pink"> {{ days.0 }} </div>
+                            <div id="row1-col2" class="pink"> {{ days.1 }} </div>
+                            <div id="row1-col3" class="pink"> {{ days.2 }} </div>
+                            <div id="row1-col4" class="pink"> {{ days.3 }} </div>
+                            <div id="row1-col5" class="pink"> {{ days.4 }} </div>
+                            <div id="row1-col6" class="pink"> {{ days.5 }} </div>
+                            <div id="row1-col7" class="pink"> {{ days.6 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row2-col1" class="pink"> {{ days.7 }} </div>
+                            <div id="row2-col2" class="pink"> {{ days.8 }} </div>
+                            <div id="row2-col3" class="pink"> {{ days.9 }} </div>
+                            <div id="row2-col4" class="pink"> {{ days.10 }} </div>
+                            <div id="row2-col5" class="pink"> {{ days.11 }} </div>
+                            <div id="row2-col6" class="pink"> {{ days.12 }} </div>
+                            <div id="row2-col7" class="pink"> {{ days.13 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row3-col1" class="pink"> {{ days.14 }} </div>
+                            <div id="row3-col2" class="pink"> {{ days.15 }} </div>
+                            <div id="row3-col3" class="pink"> {{ days.16 }} </div>
+                            <div id="row3-col4" class="pink"> {{ days.17 }} </div>
+                            <div id="row3-col5" class="pink"> {{ days.18 }} </div>
+                            <div id="row3-col6" class="pink"> {{ days.19 }} </div>
+                            <div id="row3-col7" class="pink"> {{ days.20 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row4-col1" class="pink"> {{ days.21 }} </div>
+                            <div id="row4-col2" class="pink"> {{ days.22 }} </div>
+                            <div id="row4-col3" class="pink"> {{ days.23 }} </div>
+                            <div id="row4-col4" class="pink"> {{ days.24 }} </div>
+                            <div id="row4-col5" class="pink"> {{ days.25 }} </div>
+                            <div id="row4-col6" class="pink"> {{ days.26 }} </div>
+                            <div id="row4-col7" class="pink"> {{ days.27 }} </div>
+                        </div>
+                        <div class="row">
+                            <div id="row5-col1" class="pink"> {{ days.28 }} </div>
+                            <div id="row5-col2" class="pink"> {{ days.29 }} </div>
+                            <div id="row5-col3" class="pink"> {{ days.30 }} </div>
+                            <div id="row5-col4" class="pink"> {{ days.31 }} </div>
+                            <div id="row5-col5" class="pink"> {{ days.32 }} </div>
+                            <div id="row5-col6" class="pink"> {{ days.33 }} </div>
+                            <div id="row5-col7" class="pink"> {{ days.34 }} </div>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <div class='time-stack'>
+                        
+                    </div>
+                </td>
+                <td>
+                    <form action="" method="POST">
+                        {% csrf_token %}
+                        {{ form.schedule_id }}
+                        <div id="final-schedule"> </div>
+                        <div>
+                            {{ form.name.label }}
+                            {{ form.name }}
+                        </div>
+                        <div>
+                            {{ form.email.label }}
+                            {{ form.email }}
+                        </div>
+                        <div>
+                            {{ form.message.label }}
+                            {{ form.message }}
+                        </div>
+                        {{ form.errors }}
+                        {% if success %}<div>Google Calendar invites sent successfully</div>{% endif %}
+                        <input type="submit" value="Schedule">
+                    </form>
+                </td>
+            </tr>
+        </table>
+	    <script>
+            var today = new Date();
+            today = new Date(today.getFullYear(), today.getMonth(), today.getDate(), 8, 0, 0, 0);
+            const months = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+            var year = "{{ year|escapejs }}";
+
+            var schedules = "{{ schedules|escapejs }}".split(".");
+
+            schedules = schedules.map(function(scheduleObjectString){
+                let scheduleObject = JSON.parse(scheduleObjectString);
+                return {'start' : new Date(scheduleObject['start']), 'end' : new Date(scheduleObject['end']), 'id' : scheduleObject['id'] };
+            });
+
+            let diff, col, row, calendarElement;
+            let timeStack = document.querySelector(".time-stack");
+
+            let index = 0, i = 0;
+            let containerMapping = {};
+
+            let scheduleInput = document.querySelector("#id_schedule_id");
+            let finalSchedule = document.querySelector("#final-schedule");
+            for (let schedule of schedules){
+                let start = schedule['start'];
+                let end = schedule['end'];
+                let id = schedule['id']
+
+                diff = (new Date(start.getFullYear(), start.getMonth(), start.getDate(), 8, 0, 0, 0).valueOf() - today.valueOf()) / (24 * 3600 * 1000);
+
+                row = Math.floor(diff / 7) + 1;
+                col = diff % 7 + 1; 
+                
+                calendarElement = document.querySelector("#row" + row  + "-col" + col);
+
+                calendarElement.classList.replace("pink", "aqua");
+                
+                let dateString = start.toString().slice(4,15);
+                
+                let timeContainerIndex, timeContainer;
+                if (dateString in containerMapping){
+                    timeContainerIndex = containerMapping[dateString];
+                    timeContainer = document.querySelector("#time-container" + timeContainerIndex);
+                }
+                else{
+                    containerMapping[dateString] = index;
+                    timeContainer = document.createElement("div");
+                    timeContainer.id = "time-container" + index;
+                    timeContainer.className = "time-container";
+                    timeContainer.innerHTML = dateString;
+
+                    timeStack.appendChild(timeContainer);
+                    index++;
+                }
+                
+                let timeRow = document.createElement("div");
+
+                let timeLabelContainer = document.createElement("span");
+                timeLabelContainer.innerText = start.toString().slice(16,21) + " - " + end.toString().slice(16,21);
+
+                let bookButton = document.createElement("button");
+                bookButton.innerText = "Book appointment";
+                bookButton.value = schedule.id;
+                bookButton.type = "button";
+
+                timeRow.id = `row${i}-container${index}`;
+
+                timeRow.appendChild(bookButton);
+                timeRow.appendChild(timeLabelContainer);
+
+                timeContainer.appendChild(timeRow);
+
+                bookButton.addEventListener("click", function(){
+                    document.querySelectorAll("button").forEach(function(button){
+                        button.style = "";
+                    });
+
+                    bookButton.style = "background-color : pink";
+                    scheduleInput.value = id;
+                    finalSchedule.innerText = start.toString().slice(4,21) + " - " + end.toString().slice(4,21);                  
+                })
+
+                calendarElement.addEventListener("click", function(){
+                    document.querySelectorAll(".time-container").forEach(
+						function(element){
+                            element.style.visibility = "hidden";
+						}
+					);
+
+                    timeContainer.style.visibility = "visible";
+                })
+
+                i++;
+            }
+        
+		</script>
+	</body>
+</html>
