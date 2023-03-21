@@ -159,21 +159,12 @@ def inviter(request, event_id):
 	start_time = event.start_time
 	end_time = event.end_time
 
-	print(start_time.hour)
-	print(start_time.minute)
-
-	print(end_time.hour)
-	print(end_time.minute)
-
 	start_time_delta =  datetime.timedelta(hours=start_time.hour, minutes=start_time.minute) 
 	end_time_delta = datetime.timedelta(hours=end_time.hour, minutes=end_time.minute)
 
 	duration = event.duration
 
 	delta = end_time_delta - start_time_delta
-
-	print(delta.seconds)
-	print(duration)
 
 	available_times = ""
 
@@ -217,31 +208,17 @@ def inviter(request, event_id):
 		'share_link' : share_link,
 	}
 
-	print("hello")
-	print(existing_schedules)
-
 	return render(request, "inviter.html", context)
 
 
 import json
 
 def invitee(request, share_id):
-	success = 0
-	form = BookingForm()
-
 	event = get_object_or_404(Event, share_id=share_id)
 
 	inviters = event.inviter_set.all()
 
 	inviter = inviters[event.counter]
-
-	event.counter = (event.counter + 1) % len(inviters)
-	print(event.counter)
-
-	event.save()
-
-	schedules = inviter.schedule_set.filter(is_booked=False)
-	print(schedules)
 
 	if (request.method == "POST"):
 		form = BookingForm(data=request.POST)
@@ -260,21 +237,32 @@ def invitee(request, share_id):
 			invitee = Invitee(schedule=schedule, name=name, email=invitee_email, message=message)
 			invitee.save()
 
-			print(schedule.start_datetime.isoformat())
-			# send_invites(event.name, invitee_email, inviter, schedule.start_datetime.isoformat(), schedule.end_datetime.isoformat()
+			send_invites(event.name, invitee, inviter, schedule.start_datetime.isoformat(), schedule.end_datetime.isoformat())
+
+			schedules = []
 			
 			success = 1
+	else:
+		success = 0
 
-	temp = ""
-	for schedule in schedules:
-		schedule_object = {}
-		schedule_object["start"] = schedule.start_datetime.isoformat()
-		schedule_object["end"] = schedule.end_datetime.isoformat()
-		schedule_object["id"] = schedule.schedule_id
+		form = BookingForm()		
 
-		temp += "." + json.dumps(schedule_object)
+		event.counter = (event.counter + 1) % len(inviters)
 
-	schedules = temp[1:]
+		event.save()
+
+		schedules = inviter.schedule_set.filter(is_booked=False)
+
+		temp = ""
+		for schedule in schedules:
+			schedule_object = {}
+			schedule_object["start"] = schedule.start_datetime.isoformat()
+			schedule_object["end"] = schedule.end_datetime.isoformat()
+			schedule_object["id"] = schedule.schedule_id
+
+			temp += "." + json.dumps(schedule_object)
+
+		schedules = temp[1:]
 	
 	context = {
 		'month' : datetime.date.strftime(datetime.date.today(), "%B"),
@@ -296,7 +284,7 @@ scopes = ["https://www.googleapis.com/auth/calendar.events"]
 from event.models import OauthCredentials
 
 # view used to request from spreadsheet 
-def send_invites(event_name, invitee_email, inviter, start_datetime, end_datetime):
+def send_invites(event_name, invitee, inviter, start_datetime, end_datetime):
 	creds = OauthCredentials.objects.all()[0]
 
 	creds = {
@@ -313,13 +301,14 @@ def send_invites(event_name, invitee_email, inviter, start_datetime, end_datetim
 	service = build('calendar', 'v3', credentials=credentials)
 
 	inviter_email = inviter.email
-	print(inviter_email)
+	invitee_email = invitee.email
 
 	meeting_details = inviter.meeting_details
+	message = invitee.message
 
 	event = {
 		'summary': event_name,
-		'description': meeting_details,
+		'description': f"Meeting details:\n {meeting_details}\n\n Invitee message: \n {message}",
 		'start': {
 			'dateTime': start_datetime,
 			'timeZone': 'Asia/Shanghai',
