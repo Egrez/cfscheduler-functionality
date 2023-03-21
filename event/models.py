@@ -9,6 +9,7 @@ class Event(models.Model):
     duration = models.IntegerField()
     start_time = models.TimeField()
     end_time = models.TimeField()
+    counter = models.IntegerField(default=0)
 
     class Meta:
         indexes = [

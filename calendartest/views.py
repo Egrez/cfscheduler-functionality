@@ -231,7 +231,15 @@ def invitee(request, share_id):
 
 	event = get_object_or_404(Event, share_id=share_id)
 
-	inviter = event.inviter_set.all()[0]
+	inviters = event.inviter_set.all()
+
+	inviter = inviters[event.counter]
+
+	event.counter = (event.counter + 1) % len(inviters)
+	print(event.counter)
+
+	event.save()
+
 	schedules = inviter.schedule_set.filter(is_booked=False)
 	print(schedules)
 
@@ -245,7 +253,7 @@ def invitee(request, share_id):
 			message = form.cleaned_data["message"]
 
 			schedule = Schedule.objects.get(schedule_id=schedule_id)
-            
+
 			schedule.is_booked = True 
 			schedule.save()
 
@@ -253,7 +261,8 @@ def invitee(request, share_id):
 			invitee.save()
 
 			print(schedule.start_datetime.isoformat())
-			send_invites(event.name, invitee_email, inviter, schedule.start_datetime.isoformat(), schedule.end_datetime.isoformat())
+			# send_invites(event.name, invitee_email, inviter, schedule.start_datetime.isoformat(), schedule.end_datetime.isoformat()
+			
 			success = 1
 
 	temp = ""
