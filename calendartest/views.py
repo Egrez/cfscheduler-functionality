@@ -42,14 +42,18 @@ def home(request):
 			date_ranges = []
 			start_date = dates[0]
 
-			for index in range(1, len(dates)):
-				if (dates[index] - dates[index-1] > datetime.timedelta(days=1)):
-					end_date = dates[index-1]
-					date_ranges.append((start_date, end_date))
-					start_date = dates[index]
+			if len(dates) == 1:
+				date_ranges.append([start_date, start_date])
+			else:
+				for index in range(1, len(dates)):
+					if (dates[index] - dates[index-1] > datetime.timedelta(days=1)):
+						end_date = dates[index-1]
+						date_ranges.append((start_date, end_date))
+						start_date = dates[index]
 
-			end_date = dates[index]
-			date_ranges.append((start_date, end_date))
+				end_date = dates[index]
+				date_ranges.append((start_date, end_date))
+
 
 			for date_range in date_ranges:
 				date_range = DateRange(event=event, start_date=date_range[0], end_date=date_range[1])
@@ -155,6 +159,12 @@ def inviter(request, event_id):
 	start_time = event.start_time
 	end_time = event.end_time
 
+	print(start_time.hour)
+	print(start_time.minute)
+
+	print(end_time.hour)
+	print(end_time.minute)
+
 	start_time_delta =  datetime.timedelta(hours=start_time.hour, minutes=start_time.minute) 
 	end_time_delta = datetime.timedelta(hours=end_time.hour, minutes=end_time.minute)
 
@@ -162,9 +172,12 @@ def inviter(request, event_id):
 
 	delta = end_time_delta - start_time_delta
 
+	print(delta.seconds)
+	print(duration)
+
 	available_times = ""
 
-	for i in range(0, delta.seconds//60 + 60, duration):
+	for i in range(0, delta.seconds//60 + 1, duration):
 		time = (datetime.datetime.combine(datetime.date.today(), start_time) + datetime.timedelta(minutes=i)).strftime("%H:%M")
 		available_times += time + ","
 
@@ -232,6 +245,7 @@ def invitee(request, share_id):
 			message = form.cleaned_data["message"]
 
 			schedule = Schedule.objects.get(schedule_id=schedule_id)
+            
 			schedule.is_booked = True 
 			schedule.save()
 
@@ -290,6 +304,8 @@ def send_invites(event_name, invitee_email, inviter, start_datetime, end_datetim
 	service = build('calendar', 'v3', credentials=credentials)
 
 	inviter_email = inviter.email
+	print(inviter_email)
+
 	meeting_details = inviter.meeting_details
 
 	event = {
