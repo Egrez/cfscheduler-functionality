@@ -218,8 +218,6 @@ def invitee(request, share_id):
 
 	inviters = event.inviter_set.all()
 
-	inviter = inviters[event.counter]
-
 	if (request.method == "POST"):
 		form = BookingForm(data=request.POST)
 
@@ -237,6 +235,8 @@ def invitee(request, share_id):
 			invitee = Invitee(schedule=schedule, name=name, email=invitee_email, message=message)
 			invitee.save()
 
+			inviter = schedule.inviter
+
 			send_invites(event.name, invitee, inviter, schedule.start_datetime.isoformat(), schedule.end_datetime.isoformat())
 
 			schedules = []
@@ -250,6 +250,8 @@ def invitee(request, share_id):
 		event.counter = (event.counter + 1) % len(inviters)
 
 		event.save()
+
+		inviter = inviters[event.counter]
 
 		schedules = inviter.schedule_set.filter(is_booked=False)
 
